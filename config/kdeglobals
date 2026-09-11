@@ -1,0 +1,6 @@
+# KDE apps (Kdenlive, file dialogs) read their icon theme from here rather
+# than from the GNOME settings Omarchy manages, so pin the dark Breeze icons
+# to match Omarchy's dark themes. Users can change this without affecting
+# anything else.
+[Icons]
+Theme=breeze-dark

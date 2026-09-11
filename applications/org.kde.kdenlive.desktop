@@ -1,0 +1,19 @@
+# Kdenlive ships a stock launcher that renders with Qt's built-in Fusion style
+# under Omarchy (QT_QPA_PLATFORMTHEME=gtk3), which looks cramped next to the
+# rest of the desktop. Force the Breeze widget style per-app so Kdenlive gets
+# proper padding while every other Qt app keeps tracking the Omarchy theme.
+[Desktop Entry]
+Type=Application
+Name=Kdenlive
+GenericName=Video Editor
+Comment=Nonlinear video editor by KDE
+Exec=env QT_STYLE_OVERRIDE=Breeze kdenlive %F
+Icon=kdenlive
+Terminal=false
+StartupNotify=true
+StartupWMClass=kdenlive
+X-DocPath=kdenlive/index.html
+Categories=Qt;KDE;AudioVideo;AudioVideoEditing;
+MimeType=application/x-kdenlive;application/vnd.mlt+xml;video/mp4;video/x-matroska;video/webm;video/quicktime;video/x-msvideo;video/mpeg;video/3gpp;video/3gpp2;audio/mpeg;audio/ogg;audio/flac;audio/wav;audio/mp4;audio/x-matroska;image/gif;image/jpeg;image/png;image/webp;
+Keywords=editing;video;audio;mlt;kde;
+X-DBUS-ServiceName=org.kde.kdenlive

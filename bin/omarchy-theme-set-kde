@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# omarchy:summary=Apply the current theme mode to the KDE icon theme and Kdenlive color scheme
+# omarchy:hidden=true
+
+THEME_DIR=$HOME/.local/state/omarchy/current/theme
+COLORS_FILE="$THEME_DIR/colors.toml"
+
+# omarchy-theme-color resolves mode from colors.toml (`mode = "light"`), a
+# legacy light.mode marker beside it, or background luminance for user themes.
+mode=$(omarchy-theme-color --file "$COLORS_FILE" mode)
+
+if [[ $mode == "light" ]]; then
+  kde_icon_theme="breeze"
+  kdenlive_scheme="BreezeLight"
+else
+  kde_icon_theme="breeze-dark"
+  kdenlive_scheme="BreezeDark"
+fi
+
+# KDE apps read their icon theme from kdeglobals rather than from the GNOME
+# settings omarchy-theme-set-gnome manages. Only touch it when Omarchy put it
+# there (breeze/breeze-dark) or when nothing is set; a custom icon theme is
+# the user's choice and stays.
+kdeglobals=$HOME/.config/kdeglobals
+managed_icons=0
+if [[ -f $kdeglobals ]]; then
+  managed_icons=$(awk '/^\[/ { section=$0; next } section == "[Icons]" && /^[[:space:]]*Theme[[:space:]]*=/ { if ($0 ~ /breeze(-dark)?[[:space:]]*$/) managed=1; else managed=-1 } END { print managed+0 }' "$kdeglobals")
+fi
+
+if (( managed_icons > 0 )); then
+  sed -i -E "s|^([[:space:]]*Theme[[:space:]]*=).*|\1$kde_icon_theme|" "$kdeglobals"
+elif (( managed_icons == 0 )) && [[ -f $kdeglobals ]] && grep -q '^\[Icons\]' "$kdeglobals"; then
+  sed -i "/^\[Icons\]/a Theme=$kde_icon_theme" "$kdeglobals"
+elif (( managed_icons == 0 )); then
+  mkdir -p "${kdeglobals%/*}"
+  printf '\n[Icons]\nTheme=%s\n' "$kde_icon_theme" >>"$kdeglobals"
+fi
+
+# Kdenlive persists its own color scheme and never follows the system theme,
+# so flip it with the Omarchy mode — but only between the two stock Breeze
+# schemes. Anything else was deliberately picked in Kdenlive's settings.
+kdenliverc=$HOME/.config/kdenliverc
+if [[ -f $kdenliverc ]] && grep -qE '^[[:space:]]*ColorScheme=(BreezeDark|BreezeLight)[[:space:]]*$' "$kdenliverc"; then
+  sed -i -E "s#^[[:space:]]*ColorScheme=(BreezeDark|BreezeLight)[[:space:]]*\$#ColorScheme=$kdenlive_scheme#" "$kdenliverc"
+fi
